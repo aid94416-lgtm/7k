@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7K Bet - Simulador Interativo com Animações Bac Bo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0B0E14',
+                            card: '#151922',
+                            cardHover: '#1E2430',
+                            accent: '#8B5CF6',
+                            purple: '#6D28D9',
+                            green: '#10B981',
+                            greenHover: '#059669',
+                            yellow: '#F59E0B',
+                            gold: '#FBBF24',
+                            border: '#2A303C'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0E14;
+            color: #F3F4F6;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0E14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A303C;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8B5CF6;
+        }
+
+        /* Casino Chip Base & Selection Styles */
+        .casino-chip {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 11px;
+            font-family: monospace;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            user-select: none;
+            border: 4px dashed rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+        .casino-chip:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        .casino-chip.active-chip {
+            transform: translateY(-6px) scale(1.15);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+            border-color: #FBBF24;
+        }
+
+        /* Chip Palettes */
+        .chip-1 { background: radial-gradient(circle, #3b82f6 30%, #1d4ed8 100%); color: #ffffff; }
+        .chip-5 { background: radial-gradient(circle, #ef4444 30%, #b91c1c 100%); color: #ffffff; }
+        .chip-25 { background: radial-gradient(circle, #10b981 30%, #047857 100%); color: #ffffff; }
+        .chip-100 { background: radial-gradient(circle, #27272a 30%, #09090b 100%); color: #f59e0b; border-color: #f59e0b; }
+        .chip-500 { background: radial-gradient(circle, #8b5cf6 30%, #5b21b6 100%); color: #ffffff; }
+        .chip-1000 { background: radial-gradient(circle, #f59e0b 30%, #b45309 100%); color: #000000; border-color: #ffffff; }
+
+        /* Animation: Chip Fly/Drop Landing into Betting Box */
+        @keyframes chipFlyIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-40px) scale(1.5) rotate(-25deg);
+            }
+            70% {
+                transform: translateY(4px) scale(0.9) rotate(10deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+        }
+        .animate-chip-drop {
+            animation: chipFlyIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 3D Dice Shaker & Tumbling Animation */
+        .dice-box {
+            perspective: 600px;
+        }
+        .dice-cube {
+            transition: transform 0.1s ease-in-out;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.4);
+        }
+        
+        @keyframes diceTumbleBlue {
+            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
+            25% { transform: rotateX(180deg) rotateY(90deg) rotateZ(45deg) scale(1.15); }
+            50% { transform: rotateX(360deg) rotateY(270deg) rotateZ(180deg) scale(0.85); }
+            75% { transform: rotateX(540deg) rotateY(360deg) rotateZ(270deg) scale(1.1); }
+            100% { transform: rotateX(720deg) rotateY(540deg) rotateZ(360deg) scale(1); }
+        }
+
+        @keyframes diceTumbleRed {
+            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
+            25% { transform: rotateX(-180deg) rotateY(-90deg) rotateZ(-45deg) scale(1.15); }
+            50% { transform: rotateX(-360deg) rotateY(-270deg) rotateZ(-180deg) scale(0.85); }
+            75% { transform: rotateX(-540deg) rotateY(-360deg) rotateZ(-270deg) scale(1.1); }
+            100% { transform: rotateX(-720deg) rotateY(-540deg) rotateZ(-360deg) scale(1); }
+        }
+
+        .dice-tumbling-blue {
+            animation: diceTumbleBlue 0.6s infinite linear;
+        }
+        .dice-tumbling-red {
+            animation: diceTumbleRed 0.6s infinite linear;
+        }
+
+        /* Reel Slot animation */
+        .reel-spinning {
+            animation: spinReel 0.15s linear infinite;
+        }
+        @keyframes spinReel {
+            0% { transform: translateY(-5px); opacity: 0.8; }
+            50% { transform: translateY(5px); opacity: 0.5; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-brand-dark min-h-screen flex flex-col antialiased selection:bg-brand-accent selection:text-white">
+
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MAIN HEADER -->
+    <header class="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-brand-border px-4 py-2.5 transition-all">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <!-- Left Header -->
+            <div class="flex items-center gap-3">
+                <button id="btn-toggle-sidebar" class="lg:hidden text-gray-300 hover:text-white p-1 rounded-lg hover:bg-brand-card">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2 cursor-pointer" onclick="closeGameView()">
+                    <div class="bg-gradient-to-tr from-brand-purple to-brand-accent p-2 rounded-xl text-white font-extrabold tracking-widest text-xl shadow-lg shadow-purple-900/40 flex items-center gap-1">
+                        <span>7K</span>
+                        <span class="text-brand-gold text-xs bg-black/40 px-1.5 py-0.5 rounded font-black border border-brand-gold/30">BET</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balance & User Controls -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Real Balance Badge -->
+                <div class="bg-brand-card border border-brand-border rounded-xl px-2.5 sm:px-3 py-1.5 flex items-center gap-2 shadow-inner group hover:border-brand-purple transition-all">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider flex items-center justify-end gap-1">
+                            Saldo Real 
+                            <button onclick="openModal('modal-edit-balance')" title="Editar Saldo Direto" class="text-brand-accent hover:text-white">
+                                <i data-lucide="edit-3" class="w-3 h-3"></i>
+                            </button>
+                        </span>
+                        <span id="header-balance-display" onclick="openModal('modal-edit-balance')" class="font-black text-sm sm:text-base text-brand-green cursor-pointer hover:underline font-mono">
+                            R$ 1.000,00
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Bonus Badge -->
+                <div class="hidden md:flex bg-brand-card border border-brand-border rounded-xl px-3 py-1.5 flex-col text-right group hover:border-brand-yellow transition-all">
+                    <span class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider flex items-center justify-end gap-1">
+                        Bônus 
+                        <button onclick="openModal('modal-edit-balance')" title="Editar Bônus" class="text-brand-yellow hover:text-white">
+                            <i data-lucide="edit-3" class="w-3 h-3"></i>
+                        </button>
+                    </span>
+                    <span id="header-bonus-display" onclick="openModal('modal-edit-balance')" class="font-black text-sm text-brand-gold cursor-pointer hover:underline font-mono">
+                        R$ 150,00
+                    </span>
+                </div>
+
+                <!-- Action Buttons -->
+                <button onclick="openModal('modal-deposit')" class="bg-gradient-to-r from-brand-green to-emerald-600 hover:from-brand-greenHover hover:to-emerald-700 text-black font-extrabold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-green-900/20 active:scale-95 transition-all">
+                    <i data-lucide="arrow-down-left" class="w-4 h-4 stroke-[3]"></i>
+                    <span class="hidden sm:inline">Depositar</span>
+                </button>
+                
+                <button onclick="openModal('modal-withdraw')" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border text-gray-200 hover:text-white font-bold px-3 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition-all">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4 text-brand-yellow"></i>
+                    <span class="hidden sm:inline">Sacar</span>
+                </button>
+
+                <button onclick="openModal('modal-settings')" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border p-2 rounded-xl text-gray-300 hover:text-white transition-all">
+                    <i data-lucide="user-cog" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex max-w-7xl w-full mx-auto relative">
+        
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-brand-dark/95 lg:bg-transparent border-r border-brand-border lg:border-none transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out p-4 flex flex-col justify-between shrink-0 top-[61px] lg:top-0 h-[calc(100vh-61px)] overflow-y-auto">
+            <div class="space-y-6">
+                <div>
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-3 mb-2">Navegação Principal</div>
+                    <nav class="space-y-1">
+                        <button onclick="closeGameView(); switchTab('casino')" id="nav-casino" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all text-white bg-brand-purple shadow-md">
+                            <i data-lucide="gamepad-2" class="w-5 h-5 text-brand-gold"></i>
+                            <span>Cassino</span>
+                        </button>
+                        <button onclick="closeGameView(); switchTab('live-casino')" id="nav-live-casino" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all text-gray-400 hover:text-white hover:bg-brand-card">
+                            <i data-lucide="radio" class="w-5 h-5 text-red-500 animate-pulse"></i>
+                            <span>Cassino Ao Vivo</span>
+                        </button>
+                        <button onclick="closeGameView(); switchTab('sports')" id="nav-sports" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all text-gray-400 hover:text-white hover:bg-brand-card">
+                            <i data-lucide="trophy" class="w-5 h-5 text-brand-green"></i>
+                            <span>Esportes</span>
+                            <span class="ml-auto text-[10px] bg-brand-green/20 text-brand-green font-bold px-1.5 py-0.5 rounded">AO VIVO</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div>
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-3 mb-2">Populares 7K</div>
+                    <div class="grid grid-cols-2 gap-2 px-1">
+                        <div onclick="launchGame('bacbo')" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border p-2.5 rounded-xl cursor-pointer transition-all text-center group">
+                            <i data-lucide="dices" class="w-6 h-6 mx-auto mb-1 text-brand-gold group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-bold block">Bac Bo 7K</span>
+                        </div>
+                        <div onclick="launchGame('mines')" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border p-2.5 rounded-xl cursor-pointer transition-all text-center group">
+                            <i data-lucide="bomb" class="w-6 h-6 mx-auto mb-1 text-red-500 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-bold block">Mines 7K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-brand-border">
+                <button onclick="openModal('modal-support')" class="w-full flex items-center justify-center gap-2 bg-brand-card hover:bg-brand-cardHover border border-brand-border py-2 rounded-xl text-xs font-bold text-gray-300">
+                    <i data-lucide="headphones" class="w-4 h-4 text-brand-green"></i>
+                    <span>Suporte 24/7 (Chat)</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 p-4 lg:p-6 overflow-x-hidden space-y-6">
+
+            <div id="lobby-container" class="space-y-6">
+                <!-- Banner Carousel -->
+                <section class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-purple-900/60 via-brand-dark to-emerald-950/60 border border-brand-purple/30 p-6 shadow-2xl">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                        <div class="space-y-2 text-center md:text-left max-w-xl">
+                            <span class="bg-brand-yellow/20 text-brand-gold text-xs font-black uppercase px-3 py-1 rounded-full border border-brand-yellow/30 tracking-wider">
+                                🔥 Animação 3D & Fichas no Bac Bo
+                            </span>
+                            <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                                Experimente a física de <span class="text-brand-green">Dados 3D e Fichas Animadas</span> no Bac Bo!
+                            </h2>
+                            <p class="text-gray-300 text-sm">
+                                Arremesse fichas de aposta, veja os dados girarem no shaker 3D e acompanhe o retorno do saldo.
+                            </p>
+                            <div class="pt-2 flex flex-wrap gap-3 justify-center md:justify-start">
+                                <button onclick="launchGame('bacbo')" class="bg-brand-green hover:bg-brand-greenHover text-black font-extrabold px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-green-900/40">
+                                    Jogar Bac Bo 3D
+                                </button>
+                                <button onclick="openModal('modal-deposit')" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all">
+                                    Recarregar Fictício
+                                </button>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center justify-center">
+                            <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-tr from-brand-accent to-brand-green p-1 shadow-2xl animate-pulse">
+                                <div class="w-full h-full bg-brand-dark rounded-full flex flex-col items-center justify-center text-center p-2">
+                                    <i data-lucide="dices" class="w-10 h-10 text-brand-gold mb-1"></i>
+                                    <span class="text-xs font-bold text-gray-400">DADOS & FICHAS</span>
+                                    <span class="text-xl font-black text-brand-green">ANIMAÇÃO 3D</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 1: CASINO LOBBY -->
+                <section id="view-casino" class="tab-content space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold flex items-center gap-2">
+                                <i data-lucide="flame" class="w-5 h-5 text-brand-yellow"></i>
+                                <span>Todos os Jogos 7K (Clique para Jogar)</span>
+                            </h3>
+                        </div>
+
+                        <!-- Full Interactive Grid of Games -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                            <!-- Bac Bo (DADOS 3D & FICHAS) -->
+                            <div onclick="launchGame('bacbo')" class="group relative bg-brand-card border-2 border-brand-gold rounded-2xl overflow-hidden cursor-pointer hover:shadow-2xl hover:shadow-amber-500/20 hover:-translate-y-1 transition-all">
+                                <div class="h-36 bg-gradient-to-br from-blue-950 via-brand-card to-red-950 flex flex-col items-center justify-center p-4 relative">
+                                    <div class="absolute top-2 left-2 bg-brand-gold text-black text-[10px] font-black px-2 py-0.5 rounded-full">3D & FICHAS</div>
+                                    <i data-lucide="dices" class="w-14 h-14 text-brand-gold group-hover:scale-125 transition-transform duration-300"></i>
+                                </div>
+                                <div class="p-3 bg-brand-card">
+                                    <h4 class="font-bold text-sm text-white">Bac Bo Live 7K</h4>
+                                    <p class="text-[11px] text-brand-gold font-semibold">Giro de Dados & Fichas 3D</p>
+                                </div>
+                            </div>
+
+                            <!-- Fortune Tiger -->
+                            <div onclick="launchGame('tiger')" class="group relative bg-brand-card border border-brand-border rounded-2xl overflow-hidden cursor-pointer hover:border-brand-purple hover:shadow-xl hover:-translate-y-1 transition-all">
+                                <div class="h-36 bg-gradient-to-br from-amber-950 via-brand-card to-yellow-950 flex flex-col items-center justify-center p-4 relative">
+                                    <div class="absolute top-2 left-2 bg-brand-yellow text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full">PG SOFT</div>
+                                    <i data-lucide="cat" class="w-14 h-14 text-brand-gold group-hover:scale-125 transition-transform duration-300"></i>
+                                </div>
+                                <div class="p-3 bg-brand-card">
+                                    <h4 class="font-bold text-sm text-white">Fortune Tiger</h4>
+                                    <p class="text-[11px] text-gray-400">O jogo do Tigrinho • Girar</p>
+                                </div>
+                            </div>
+
+                            <!-- Mines 7K -->
+                            <div onclick="launchGame('mines')" class="group relative bg-brand-card border border-brand-border rounded-2xl overflow-hidden cursor-pointer hover:border-brand-purple hover:shadow-xl hover:-translate-y-1 transition-all">
+                                <div class="h-36 bg-gradient-to-br from-red-950 via-brand-card to-zinc-900 flex flex-col items-center justify-center p-4 relative">
+                                    <div class="absolute top-2 left-2 bg-red-600/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">ORIGINAL</div>
+                                    <i data-lucide="bomb" class="w-14 h-14 text-red-500 group-hover:scale-125 transition-transform duration-300"></i>
+                                </div>
+                                <div class="p-3 bg-brand-card">
+                                    <h4 class="font-bold text-sm text-white">Mines 7K</h4>
+                                    <p class="text-[11px] text-gray-400">Desarme minas & multiplique</p>
+                                </div>
+                            </div>
+
+                            <!-- Aviator -->
+                            <div onclick="launchGame('aviator')" class="group relative bg-brand-card border border-brand-border rounded-2xl overflow-hidden cursor-pointer hover:border-brand-purple hover:shadow-xl hover:-translate-y-1 transition-all">
+                                <div class="h-36 bg-gradient-to-br from-purple-950 via-brand-card to-sky-950 flex flex-col items-center justify-center p-4 relative">
+                                    <div class="absolute top-2 left-2 bg-brand-purple text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">CRASH</div>
+                                    <i data-lucide="plane" class="w-14 h-14 text-brand-accent group-hover:scale-125 transition-transform duration-300"></i>
+                                </div>
+                                <div class="p-3 bg-brand-card">
+                                    <h4 class="font-bold text-sm text-white">Aviator 7K</h4>
+                                    <p class="text-[11px] text-gray-400">Retire antes de voar</p>
+                                </div>
+                            </div>
+
+                            <!-- Roleta Brasileira -->
+                            <div onclick="launchGame('roulette')" class="group relative bg-brand-card border border-brand-border rounded-2xl overflow-hidden cursor-pointer hover:border-brand-purple hover:shadow-xl hover:-translate-y-1 transition-all">
+                                <div class="h-36 bg-gradient-to-br from-emerald-950 via-brand-card to-green-950 flex flex-col items-center justify-center p-4 relative">
+                                    <div class="absolute top-2 left-2 bg-brand-green text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full">AO VIVO</div>
+                                    <i data-lucide="disc" class="w-14 h-14 text-brand-green group-hover:scale-125 transition-transform duration-300"></i>
+                                </div>
+                                <div class="p-3 bg-brand-card">
+                                    <h4 class="font-bold text-sm text-white">Roleta Brasileira</h4>
+                                    <p class="text-[11px] text-gray-400">Gire a roleta em tempo real</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: LIVE CASINO LOBBY -->
+                <section id="view-live-casino" class="tab-content hidden space-y-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <i data-lucide="radio" class="w-6 h-6 text-red-500 animate-pulse"></i>
+                        <span>Mesas de Cassino Ao Vivo</span>
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div onclick="launchGame('bacbo')" class="bg-brand-card border border-brand-border rounded-2xl p-4 cursor-pointer hover:border-brand-purple transition-all flex items-center gap-4">
+                            <div class="p-3 bg-red-500/20 rounded-xl text-red-400">
+                                <i data-lucide="dices" class="w-8 h-8"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Bac Bo Live (Animação 3D)</h4>
+                                <p class="text-xs text-gray-400">Min: R$ 1,00 | Max: R$ 10.000</p>
+                                <span class="inline-block mt-2 text-[10px] bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded">Mesa Ativa</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: SPORTS LOBBY -->
+                <section id="view-sports" class="tab-content hidden space-y-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <i data-lucide="trophy" class="w-6 h-6 text-brand-green"></i>
+                        <span>Apostas Esportivas</span>
+                    </h3>
+                    <p class="text-xs text-gray-400">Acesse e faça suas apostas em tempo real.</p>
+                </section>
+            </div>
+
+            <!-- GAME SCREEN CONTAINER -->
+            <div id="game-view-container" class="hidden space-y-4">
+                <!-- Return Header -->
+                <div class="flex items-center justify-between bg-brand-card border border-brand-border p-3 rounded-2xl">
+                    <button onclick="closeGameView()" class="bg-brand-dark hover:bg-brand-cardHover border border-brand-border text-white font-extrabold px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all">
+                        <i data-lucide="arrow-left" class="w-4 h-4 text-brand-yellow"></i>
+                        <span>Voltar ao Lobby</span>
+                    </button>
+                    <div class="text-right">
+                        <span id="active-game-title" class="font-black text-white text-sm sm:text-base">BAC BO LIVE 3D</span>
+                        <span class="text-[10px] text-brand-green block font-mono">SESSÃO DE JOGO ATIVA</span>
+                    </div>
+                </div>
+
+                <!-- BAC BO GAME SCREEN WITH 3D DICE & CHIP FLYING -->
+                <div id="game-screen-bacbo" class="game-screen hidden bg-brand-card border border-brand-border rounded-2xl p-3 sm:p-5 space-y-4 max-w-3xl mx-auto shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-brand-border pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="dices" class="w-6 h-6 text-brand-gold"></i>
+                            <div>
+                                <h3 class="font-extrabold text-white text-base">Bac Bo Live 7K</h3>
+                                <p class="text-[11px] text-gray-400">Escolha uma ficha e aposte com física de animação</p>
+                            </div>
+                        </div>
+                        <span class="bg-red-500/20 text-red-400 text-xs font-bold px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> AO VIVO
+                        </span>
+                    </div>
+
+                    <!-- BAC BO LIVE TABLE & 3D DICE SHAKERS -->
+                    <div class="bg-gradient-to-b from-emerald-950/80 via-brand-dark to-brand-card border-2 border-emerald-600/40 rounded-2xl p-4 shadow-2xl space-y-4 relative overflow-hidden">
+                        
+                        <!-- Shakers & Dice Arena -->
+                        <div class="grid grid-cols-2 gap-4 my-1">
+                            <!-- PLAYER SHAKERS (BLUE) -->
+                            <div class="bg-blue-950/60 border border-blue-500/40 rounded-xl p-3 text-center space-y-2 relative">
+                                <span class="text-xs font-black text-blue-400 tracking-wider uppercase block">JOGADOR (PLAYER)</span>
+                                <div class="flex justify-center gap-4 dice-box py-2">
+                                    <div id="bacbo-p-dice1" class="dice-cube w-12 h-12 bg-blue-600 text-white rounded-xl font-mono text-2xl font-black flex items-center justify-center shadow-2xl border-2 border-blue-300">1</div>
+                                    <div id="bacbo-p-dice2" class="dice-cube w-12 h-12 bg-blue-600 text-white rounded-xl font-mono text-2xl font-black flex items-center justify-center shadow-2xl border-2 border-blue-300">1</div>
+                                </div>
+                                <div class="text-xs font-bold text-gray-300">TOTAL: <span id="bacbo-p-sum" class="text-blue-400 text-base font-black font-mono">2</span></div>
+                            </div>
+
+                            <!-- BANKER SHAKERS (RED) -->
+                            <div class="bg-red-950/60 border border-red-500/40 rounded-xl p-3 text-center space-y-2 relative">
+                                <span class="text-xs font-black text-red-400 tracking-wider uppercase block">BANCA (BANKER)</span>
+                                <div class="flex justify-center gap-4 dice-box py-2">
+                                    <div id="bacbo-b-dice1" class="dice-cube w-12 h-12 bg-red-600 text-white rounded-xl font-mono text-2xl font-black flex items-center justify-center shadow-2xl border-2 border-red-300">1</div>
+                                    <div id="bacbo-b-dice2" class="dice-cube w-12 h-12 bg-red-600 text-white rounded-xl font-mono text-2xl font-black flex items-center justify-center shadow-2xl border-2 border-red-300">1</div>
+                                </div>
+                                <div class="text-xs font-bold text-gray-300">TOTAL: <span id="bacbo-b-sum" class="text-red-400 text-base font-black font-mono">2</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Status Banner -->
+                        <div id="bacbo-status-banner" class="text-center font-extrabold text-xs sm:text-sm text-brand-gold min-h-[22px] transition-all">
+                            Selecione uma ficha abaixo e faça sua aposta!
+                        </div>
+                    </div>
+
+                    <!-- CASINO CHIPS SELECTOR BAR -->
+                    <div class="bg-brand-dark/90 border border-brand-border rounded-xl p-3 space-y-2">
+                        <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block text-center">Selecione o Valor da Ficha (Chip Selector)</span>
+                        <div class="flex items-center justify-center gap-2 sm:gap-4 overflow-x-auto py-1 scrollbar-none">
+                            <div onclick="selectChip(1)" id="chip-val-1" class="casino-chip chip-1 active-chip">1</div>
+                            <div onclick="selectChip(5)" id="chip-val-5" class="casino-chip chip-5">5</div>
+                            <div onclick="selectChip(25)" id="chip-val-25" class="casino-chip chip-25">25</div>
+                            <div onclick="selectChip(100)" id="chip-val-100" class="casino-chip chip-100">100</div>
+                            <div onclick="selectChip(500)" id="chip-val-500" class="casino-chip chip-500">500</div>
+                            <div onclick="selectChip(1000)" id="chip-val-1000" class="casino-chip chip-1000">1K</div>
+                        </div>
+                    </div>
+
+                    <!-- BETTING SPOTS (PLAYER, TIE, BANKER) -->
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3">
+                        <!-- PLAYER SPOT -->
+                        <div onclick="placeChipOnBet('player')" id="spot-player" class="bg-blue-950/40 hover:bg-blue-900/50 border-2 border-blue-500/50 hover:border-blue-400 rounded-2xl p-3 text-center cursor-pointer transition-all relative flex flex-col justify-between min-h-[120px] shadow-lg group overflow-hidden">
+                            <div>
+                                <span class="block text-xs font-black text-blue-400 tracking-wider">JOGADOR</span>
+                                <span class="text-[10px] font-mono text-gray-300">PAGA 1:1</span>
+                            </div>
+                            <div id="spot-player-chips" class="flex flex-wrap items-center justify-center gap-1 my-1">
+                                <!-- Chips dynamically stacked here -->
+                            </div>
+                            <div id="spot-player-total" class="text-xs font-black text-white font-mono bg-blue-900/60 rounded-full px-2 py-0.5 mx-auto w-fit">
+                                R$ 0
+                            </div>
+                        </div>
+
+                        <!-- TIE SPOT -->
+                        <div onclick="placeChipOnBet('tie')" id="spot-tie" class="bg-emerald-950/40 hover:bg-emerald-900/50 border-2 border-emerald-500/50 hover:border-emerald-400 rounded-2xl p-3 text-center cursor-pointer transition-all relative flex flex-col justify-between min-h-[120px] shadow-lg group overflow-hidden">
+                            <div>
+                                <span class="block text-xs font-black text-brand-gold tracking-wider">EMPATE</span>
+                                <span class="text-[10px] font-mono text-gray-300">PAGA 88:1 / 11:1</span>
+                            </div>
+                            <div id="spot-tie-chips" class="flex flex-wrap items-center justify-center gap-1 my-1">
+                                <!-- Chips dynamically stacked here -->
+                            </div>
+                            <div id="spot-tie-total" class="text-xs font-black text-white font-mono bg-emerald-900/60 rounded-full px-2 py-0.5 mx-auto w-fit">
+                                R$ 0
+                            </div>
+                        </div>
+
+                        <!-- BANKER SPOT -->
+                        <div onclick="placeChipOnBet('banker')" id="spot-banker" class="bg-red-950/40 hover:bg-red-900/50 border-2 border-red-500/50 hover:border-red-400 rounded-2xl p-3 text-center cursor-pointer transition-all relative flex flex-col justify-between min-h-[120px] shadow-lg group overflow-hidden">
+                            <div>
+                                <span class="block text-xs font-black text-red-400 tracking-wider">BANCA</span>
+                                <span class="text-[10px] font-mono text-gray-300">PAGA 1:1</span>
+                            </div>
+                            <div id="spot-banker-chips" class="flex flex-wrap items-center justify-center gap-1 my-1">
+                                <!-- Chips dynamically stacked here -->
+                            </div>
+                            <div id="spot-banker-total" class="text-xs font-black text-white font-mono bg-red-900/60 rounded-full px-2 py-0.5 mx-auto w-fit">
+                                R$ 0
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTROL BUTTONS: ROLL, CLEAR, DOUBLE -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                        <div class="flex gap-2">
+                            <button onclick="clearBacBoBets()" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border text-gray-300 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-400"></i>
+                                <span>Limpar</span>
+                            </button>
+                            <button onclick="doubleBacBoBets()" class="bg-brand-card hover:bg-brand-cardHover border border-brand-border text-brand-gold font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all">
+                                <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                                <span>Dobrar (2x)</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-400 font-bold">Total Apostado: <span id="bacbo-total-table-bet" class="text-brand-green font-mono">R$ 0</span></span>
+                            <button onclick="rollBacBoDiceWithChips()" id="btn-roll-bacbo" class="bg-gradient-to-r from-brand-yellow to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-black px-5 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-lg active:scale-95">
+                                🎲 ROLL (LANÇAR DADOS 3D)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ROADMAP & STATISTICS GRAPHICS -->
+                    <div class="bg-brand-dark border border-brand-border rounded-xl p-3 space-y-2">
+                        <div class="flex items-center justify-between text-xs font-bold text-gray-300">
+                            <span>Histórico de Tendências (Bead Plate)</span>
+                            <span id="bacbo-rounds-count" class="text-gray-400 font-mono">15 Rodadas</span>
+                        </div>
+
+                        <!-- ROADMAP BEAD PLATE GRID -->
+                        <div id="bacbo-bead-plate" class="flex items-center gap-1.5 overflow-x-auto p-1 scrollbar-none min-h-[36px]">
+                            <!-- Bead Circles -->
+                        </div>
+
+                        <!-- PERCENTAGE STATS BAR GRAPH -->
+                        <div class="space-y-1 pt-1">
+                            <div class="flex justify-between text-[10px] font-bold">
+                                <span class="text-blue-400">JOGADOR: <span id="bacbo-stat-p">0%</span></span>
+                                <span class="text-emerald-400">EMPATE: <span id="bacbo-stat-t">0%</span></span>
+                                <span class="text-red-400">BANCA: <span id="bacbo-stat-b">0%</span></span>
+                            </div>
+                            <div class="h-2 w-full bg-brand-card rounded-full overflow-hidden flex">
+                                <div id="bacbo-bar-p" class="bg-blue-500 h-full transition-all duration-500" style="width: 40%"></div>
+                                <div id="bacbo-bar-t" class="bg-emerald-500 h-full transition-all duration-500" style="width: 20%"></div>
+                                <div id="bacbo-bar-b" class="bg-red-500 h-full transition-all duration-500" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTHER GAME SCREENS -->
+                <div id="game-screen-slot" class="game-screen hidden bg-brand-card border border-brand-border rounded-2xl p-6 space-y-6 text-center max-w-2xl mx-auto">
+                    <h2 id="slot-title-display" class="text-2xl font-black text-brand-gold">FORTUNE TIGER 7K</h2>
+                    <div class="bg-brand-dark border-4 border-brand-gold/30 rounded-2xl p-4 max-w-md mx-auto">
+                        <div class="grid grid-cols-3 gap-3 my-4">
+                            <div id="reel-1" class="h-24 bg-brand-card border rounded-xl flex items-center justify-center text-4xl">🐯</div>
+                            <div id="reel-2" class="h-24 bg-brand-card border rounded-xl flex items-center justify-center text-4xl">🐯</div>
+                            <div id="reel-3" class="h-24 bg-brand-card border rounded-xl flex items-center justify-center text-4xl">🐯</div>
+                        </div>
+                        <div id="slot-result-message" class="text-xs font-bold text-brand-green">Clique em GIRAR para iniciar!</div>
+                    </div>
+                    <div class="flex items-center justify-center gap-3 max-w-md mx-auto">
+                        <input id="slot-bet-amount" type="number" value="10" min="1" class="bg-brand-dark border rounded-xl px-3 py-2 text-sm font-bold w-1/2">
+                        <button onclick="spinSlotMachine()" class="bg-brand-yellow text-black font-black px-4 py-2.5 rounded-xl text-sm w-1/2">🎰 GIRAR</button>
+                    </div>
+                </div>
+
+                <div id="game-screen-mines" class="game-screen hidden bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4 max-w-md mx-auto">
+                    <h3 class="font-bold text-white">Mines 7K</h3>
+                    <div id="mines-page-grid" class="grid grid-cols-5 gap-2"></div>
+                </div>
+
+                <div id="game-screen-aviator" class="game-screen hidden bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4 max-w-lg mx-auto">
+                    <h3 class="font-bold text-white">Aviator Crash</h3>
+                    <div class="h-40 bg-brand-dark rounded-xl flex items-center justify-center text-4xl font-black font-mono text-white" id="aviator-page-mult">1.00x</div>
+                </div>
+
+                <div id="game-screen-roulette" class="game-screen hidden bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4 max-w-lg mx-auto">
+                    <h3 class="font-bold text-white">Roleta Brasileira</h3>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALS SECTION -->
+    <div id="modal-edit-balance" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeModal('modal-edit-balance')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="font-extrabold text-white text-base">Editar Saldo Fictício</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">Saldo Real (R$)</label>
+                    <input id="input-edit-balance" type="number" step="0.01" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 font-mono text-sm font-bold text-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">Saldo Bônus (R$)</label>
+                    <input id="input-edit-bonus" type="number" step="0.01" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 font-mono text-sm font-bold text-white focus:outline-none">
+                </div>
+                <button onclick="saveEditedBalance()" class="w-full bg-brand-purple text-white font-extrabold py-2.5 rounded-xl text-sm">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-deposit" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeModal('modal-deposit')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="font-extrabold text-white text-lg text-center">Depósito PIX Simulado</h3>
+            <input id="deposit-amount" type="number" value="100" min="1" class="w-full bg-brand-dark border rounded-xl px-3 py-2 font-mono text-sm font-bold text-white">
+            <button onclick="processSimulatedDeposit()" class="w-full bg-brand-green text-black font-extrabold py-3 rounded-xl text-sm">Creditar Fictício</button>
+        </div>
+    </div>
+
+    <div id="modal-withdraw" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeModal('modal-withdraw')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="font-extrabold text-white text-lg text-center">Saque PIX Simulado</h3>
+            <input id="withdraw-amount" type="number" value="50" min="1" class="w-full bg-brand-dark border rounded-xl px-3 py-2 font-mono text-sm font-bold text-white">
+            <button onclick="processSimulatedWithdraw()" class="w-full bg-brand-yellow text-black font-extrabold py-3 rounded-xl text-sm">Confirmar Saque</button>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeModal('modal-settings')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="font-extrabold text-white text-base">Opções</h3>
+            <button onclick="resetBalanceDefault()" class="w-full bg-brand-dark border border-red-500/50 text-red-400 font-bold py-2.5 rounded-xl text-xs">Resetar Saldo (R$ 1.000,00)</button>
+        </div>
+    </div>
+
+    <div id="modal-support" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl relative">
+            <button onclick="closeModal('modal-support')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="font-extrabold text-white text-base">Suporte 7K 24/7</h3>
+        </div>
+    </div>
+
+    <script>
+        // --- APP STATE ---
+        let appState = {
+            balance: 1000.00,
+            bonus: 150.00
+        };
+
+        // --- BAC BO CHIPS & ANIMATIONS STATE ---
+        let selectedChipValue = 1;
+        let bacBoBets = {
+            player: 0,
+            tie: 0,
+            banker: 0
+        };
+        let bacBoHistory = [];
+
+        function loadSavedState() {
+            const saved = localStorage.getItem('7k_simulator_state');
+            if (saved) {
+                try { appState = { ...appState, ...JSON.parse(saved) }; } catch (e) {}
+            }
+            updateUIBalance();
+        }
+
+        function saveState() {
+            localStorage.setItem('7k_simulator_state', JSON.stringify(appState));
+            updateUIBalance();
+        }
+
+        function updateUIBalance() {
+            const balanceElem = document.getElementById('header-balance-display');
+            const bonusElem = document.getElementById('header-bonus-display');
+            const editBalanceInput = document.getElementById('input-edit-balance');
+            const editBonusInput = document.getElementById('input-edit-bonus');
+
+            if (balanceElem) balanceElem.textContent = `R$ ${appState.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            if (bonusElem) bonusElem.textContent = `R$ ${appState.bonus.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            if (editBalanceInput) editBalanceInput.value = appState.balance.toFixed(2);
+            if (editBonusInput) editBonusInput.value = appState.bonus.toFixed(2);
+        }
+
+        function addBalance(amount) {
+            appState.balance += amount;
+            saveState();
+        }
+
+        function deductBalance(amount) {
+            if (appState.balance >= amount) {
+                appState.balance -= amount;
+                saveState();
+                return true;
+            } else if (appState.balance + appState.bonus >= amount) {
+                const remainder = amount - appState.balance;
+                appState.balance = 0;
+                appState.bonus -= remainder;
+                saveState();
+                return true;
+            }
+            showToast('SALDO INSUFICIENTE', 'Você não possui saldo fictício suficiente!', 'error');
+            return false;
+        }
+
+        function saveEditedBalance() {
+            appState.balance = parseFloat(document.getElementById('input-edit-balance').value) || 0;
+            appState.bonus = parseFloat(document.getElementById('input-edit-bonus').value) || 0;
+            saveState();
+            closeModal('modal-edit-balance');
+            showToast('SALDO ATUALIZADO', 'Valores salvos!', 'success');
+        }
+
+        function resetBalanceDefault() {
+            appState.balance = 1000.00;
+            appState.bonus = 150.00;
+            saveState();
+            closeModal('modal-settings');
+            showToast('RESTAURADO', 'Saldo reiniciado para R$ 1.000,00', 'info');
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
+            closeGameView();
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-brand-purple', 'text-white', 'shadow-md');
+                el.classList.add('text-gray-400');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-brand-purple', 'text-white', 'shadow-md');
+                activeNav.classList.remove('text-gray-400');
+            }
+        }
+
+        function launchGame(gameKey) {
+            document.getElementById('lobby-container').classList.add('hidden');
+            document.getElementById('game-view-container').classList.remove('hidden');
+
+            document.querySelectorAll('.game-screen').forEach(s => s.classList.add('hidden'));
+
+            const titleEl = document.getElementById('active-game-title');
+
+            if (gameKey === 'bacbo') {
+                document.getElementById('game-screen-bacbo').classList.remove('hidden');
+                titleEl.textContent = 'BAC BO LIVE 3D';
+                initBacBoHistory();
+            } else if (gameKey === 'tiger') {
+                document.getElementById('game-screen-slot').classList.remove('hidden');
+                titleEl.textContent = 'FORTUNE TIGER';
+            } else if (gameKey === 'mines') {
+                document.getElementById('game-screen-mines').classList.remove('hidden');
+                titleEl.textContent = 'MINES 7K';
+            } else if (gameKey === 'aviator') {
+                document.getElementById('game-screen-aviator').classList.remove('hidden');
+                titleEl.textContent = 'AVIATOR 7K';
+            } else if (gameKey === 'roulette') {
+                document.getElementById('game-screen-roulette').classList.remove('hidden');
+                titleEl.textContent = 'ROLETA BRASILEIRA';
+            }
+        }
+
+        function closeGameView() {
+            document.getElementById('game-view-container').classList.add('hidden');
+            document.getElementById('lobby-container').classList.remove('hidden');
+        }
+
+        // --- BAC BO CHIP SELECTION & ANIMATED BETTING ENGINE ---
+        function selectChip(val) {
+            selectedChipValue = val;
+            document.querySelectorAll('.casino-chip').forEach(c => c.classList.remove('active-chip'));
+            const activeChipElem = document.getElementById(`chip-val-${val}`);
+            if (activeChipElem) activeChipElem.classList.add('active-chip');
+        }
+
+        function placeChipOnBet(spot) {
+            const totalBetNeeded = selectedChipValue;
+            if (appState.balance < totalBetNeeded) {
+                showToast('SEM SALDO', 'Saldo insuficiente para colocar esta ficha!', 'error');
+                return;
+            }
+
+            bacBoBets[spot] += selectedChipValue;
+            updateBacBoBetSpotsUI(spot); // triggers chip fly animation
+        }
+
+        function clearBacBoBets() {
+            bacBoBets = { player: 0, tie: 0, banker: 0 };
+            updateBacBoBetSpotsUI();
+            showToast('APOSTAS LIMPAS', 'Todas as fichas foram removidas da mesa.', 'info');
+        }
+
+        function doubleBacBoBets() {
+            const currentTotal = bacBoBets.player + bacBoBets.tie + bacBoBets.banker;
+            if (currentTotal === 0) return;
+
+            if (appState.balance < currentTotal * 2) {
+                showToast('SEM SALDO', 'Saldo insuficiente para dobrar as apostas!', 'error');
+                return;
+            }
+
+            bacBoBets.player *= 2;
+            bacBoBets.tie *= 2;
+            bacBoBets.banker *= 2;
+            updateBacBoBetSpotsUI();
+        }
+
+        function updateBacBoBetSpotsUI(animatedSpot = null) {
+            // Update Spot Totals
+            document.getElementById('spot-player-total').textContent = `R$ ${bacBoBets.player}`;
+            document.getElementById('spot-tie-total').textContent = `R$ ${bacBoBets.tie}`;
+            document.getElementById('spot-banker-total').textContent = `R$ ${bacBoBets.banker}`;
+
+            const grandTotal = bacBoBets.player + bacBoBets.tie + bacBoBets.banker;
+            document.getElementById('bacbo-total-table-bet').textContent = `R$ ${grandTotal}`;
+
+            // Render Stacked Chips
+            renderChipsInSpot('player', bacBoBets.player, animatedSpot === 'player');
+            renderChipsInSpot('tie', bacBoBets.tie, animatedSpot === 'tie');
+            renderChipsInSpot('banker', bacBoBets.banker, animatedSpot === 'banker');
+        }
+
+        function renderChipsInSpot(spot, amount, shouldAnimateLast = false) {
+            const container = document.getElementById(`spot-${spot}-chips`);
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (amount === 0) return;
+
+            // Generate representative mini chips
+            const values = [1000, 500, 100, 25, 5, 1];
+            let rem = amount;
+            let count = 0;
+
+            for (let v of values) {
+                while (rem >= v && count < 6) {
+                    const miniChip = document.createElement('div');
+                    miniChip.className = `w-6 h-6 rounded-full text-[9px] font-black flex items-center justify-center border border-white/80 shadow-md ${getChipClassByVal(v)}`;
+                    miniChip.textContent = v >= 1000 ? '1K' : v;
+
+                    // Apply animated chip drop/landing effect if it's the target spot
+                    if (shouldAnimateLast && count === 0) {
+                        miniChip.classList.add('animate-chip-drop');
+                    }
+
+                    container.appendChild(miniChip);
+                    rem -= v;
+                    count++;
+                }
+            }
+        }
+
+        function getChipClassByVal(v) {
+            if (v === 1000) return 'chip-1000';
+            if (v === 500) return 'chip-500';
+            if (v === 100) return 'chip-100';
+            if (v === 25) return 'chip-25';
+            if (v === 5) return 'chip-5';
+            return 'chip-1';
+        }
+
+        // --- 3D DICE SHAKER & TUMBLE ROLL ENGINE ---
+        function rollBacBoDiceWithChips() {
+            const totalBet = bacBoBets.player + bacBoBets.tie + bacBoBets.banker;
+
+            if (totalBet <= 0) {
+                showToast('FAÇA UMA APOSTA', 'Selecione uma ficha e aposte em Jogador, Empate ou Banca!', 'error');
+                return;
+            }
+
+            if (!deductBalance(totalBet)) return;
+
+            const btn = document.getElementById('btn-roll-bacbo');
+            btn.disabled = true;
+            document.getElementById('bacbo-status-banner').textContent = '🎲 DADOS GIRANDO EM 3D NO SHAKER...';
+
+            const p1 = document.getElementById('bacbo-p-dice1');
+            const p2 = document.getElementById('bacbo-p-dice2');
+            const b1 = document.getElementById('bacbo-b-dice1');
+            const b2 = document.getElementById('bacbo-b-dice2');
+
+            // Apply 3D Tumbling CSS Animation classes
+            p1.classList.add('dice-tumbling-blue');
+            p2.classList.add('dice-tumbling-blue');
+            b1.classList.add('dice-tumbling-red');
+            b2.classList.add('dice-tumbling-red');
+
+            let animCount = 0;
+            const diceAnim = setInterval(() => {
+                // Sorteia valores rápidos visuais durante a rotação
+                p1.textContent = Math.floor(Math.random() * 6) + 1;
+                p2.textContent = Math.floor(Math.random() * 6) + 1;
+                b1.textContent = Math.floor(Math.random() * 6) + 1;
+                b2.textContent = Math.floor(Math.random() * 6) + 1;
+
+                document.getElementById('bacbo-p-sum').textContent = parseInt(p1.textContent) + parseInt(p2.textContent);
+                document.getElementById('bacbo-b-sum').textContent = parseInt(b1.textContent) + parseInt(b2.textContent);
+
+                animCount++;
+                if (animCount > 18) { // 1.8 segundos de rotação 3D
+                    clearInterval(diceAnim);
+
+                    // Remove 3D tumble animations
+                    p1.classList.remove('dice-tumbling-blue');
+                    p2.classList.remove('dice-tumbling-blue');
+                    b1.classList.remove('dice-tumbling-red');
+                    b2.classList.remove('dice-tumbling-red');
+
+                    // Sorteio final
+                    const finalP1 = Math.floor(Math.random() * 6) + 1;
+                    const finalP2 = Math.floor(Math.random() * 6) + 1;
+                    const finalB1 = Math.floor(Math.random() * 6) + 1;
+                    const finalB2 = Math.floor(Math.random() * 6) + 1;
+
+                    p1.textContent = finalP1;
+                    p2.textContent = finalP2;
+                    b1.textContent = finalB1;
+                    b2.textContent = finalB2;
+
+                    const sumP = finalP1 + finalP2;
+                    const sumB = finalB1 + finalB2;
+
+                    document.getElementById('bacbo-p-sum').textContent = sumP;
+                    document.getElementById('bacbo-b-sum').textContent = sumB;
+
+                    let winner = '';
+                    let outcomeSymbol = '';
+
+                    if (sumP > sumB) {
+                        winner = 'player';
+                        outcomeSymbol = 'P';
+                    } else if (sumB > sumP) {
+                        winner = 'banker';
+                        outcomeSymbol = 'B';
+                    } else {
+                        winner = 'tie';
+                        outcomeSymbol = 'T';
+                    }
+
+                    bacBoHistory.push(outcomeSymbol);
+                    if (bacBoHistory.length > 30) bacBoHistory.shift();
+                    updateBacBoRoadmapUI();
+
+                    // Payout Calculation
+                    let winAmount = 0;
+                    if (winner === 'player' && bacBoBets.player > 0) winAmount += bacBoBets.player * 2;
+                    if (winner === 'banker' && bacBoBets.banker > 0) winAmount += bacBoBets.banker * 2;
+                    if (winner === 'tie' && bacBoBets.tie > 0) winAmount += bacBoBets.tie * 12;
+
+                    if (winAmount > 0) {
+                        addBalance(winAmount);
+                        document.getElementById('bacbo-status-banner').textContent = `🎉 VITÓRIA DO ${winner.toUpperCase()}! Ganhou R$ ${winAmount.toFixed(2)}`;
+                        showToast('BAC BO GANHO!', `R$ ${winAmount.toFixed(2)} creditados ao seu saldo!`, 'success');
+                    } else {
+                        document.getElementById('bacbo-status-banner').textContent = `Vitória da ${winner.toUpperCase()} (${sumP} vs ${sumB}). Tente novamente!`;
+                    }
+
+                    // Reset Table Bets after round
+                    bacBoBets = { player: 0, tie: 0, banker: 0 };
+                    updateBacBoBetSpotsUI();
+                    btn.disabled = false;
+                }
+            }, 90);
+        }
+
+        function initBacBoHistory() {
+            if (bacBoHistory.length === 0) {
+                const outcomes = ['P', 'B', 'P', 'P', 'B', 'T', 'B', 'P', 'B', 'B', 'P', 'B', 'P', 'B', 'T'];
+                outcomes.forEach(o => bacBoHistory.push(o));
+            }
+            updateBacBoRoadmapUI();
+        }
+
+        function updateBacBoRoadmapUI() {
+            const container = document.getElementById('bacbo-bead-plate');
+            if (!container) return;
+            container.innerHTML = '';
+
+            let pCount = 0, bCount = 0, tCount = 0;
+
+            bacBoHistory.forEach(item => {
+                const bead = document.createElement('div');
+                bead.className = 'w-7 h-7 rounded-full flex items-center justify-center font-mono font-black text-xs shrink-0 shadow';
+
+                if (item === 'P') {
+                    bead.classList.add('bg-blue-600', 'text-white');
+                    bead.textContent = 'P';
+                    pCount++;
+                } else if (item === 'B') {
+                    bead.classList.add('bg-red-600', 'text-white');
+                    bead.textContent = 'B';
+                    bCount++;
+                } else {
+                    bead.classList.add('bg-emerald-500', 'text-black');
+                    bead.textContent = 'T';
+                    tCount++;
+                }
+                container.appendChild(bead);
+            });
+
+            const total = bacBoHistory.length || 1;
+            const pPct = Math.round((pCount / total) * 100);
+            const bPct = Math.round((bCount / total) * 100);
+            const tPct = 100 - pPct - bPct;
+
+            document.getElementById('bacbo-stat-p').textContent = `${pPct}%`;
+            document.getElementById('bacbo-stat-b').textContent = `${bPct}%`;
+            document.getElementById('bacbo-stat-t').textContent = `${tPct}%`;
+
+            document.getElementById('bacbo-bar-p').style.width = `${pPct}%`;
+            document.getElementById('bacbo-bar-b').style.width = `${bPct}%`;
+            document.getElementById('bacbo-bar-t').style.width = `${tPct}%`;
+            document.getElementById('bacbo-rounds-count').textContent = `${total} Rodadas`;
+        }
+
+        // --- SLOT MACHINE ENGINE ---
+        const slotSymbols = ['🐯', '🧧', '🍊', '💎', '👑', '7️⃣'];
+        function spinSlotMachine() {
+            const betVal = parseFloat(document.getElementById('slot-bet-amount').value);
+            if (!deductBalance(betVal)) return;
+
+            const reel1 = document.getElementById('reel-1');
+            const reel2 = document.getElementById('reel-2');
+            const reel3 = document.getElementById('reel-3');
+            const msg = document.getElementById('slot-result-message');
+
+            reel1.classList.add('reel-spinning');
+            reel2.classList.add('reel-spinning');
+            reel3.classList.add('reel-spinning');
+            msg.textContent = 'GIRANDO CARRETÉIS...';
+
+            setTimeout(() => {
+                const s1 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                const s2 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+                const s3 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+
+                reel1.classList.remove('reel-spinning');
+                reel2.classList.remove('reel-spinning');
+                reel3.classList.remove('reel-spinning');
+
+                reel1.textContent = s1;
+                reel2.textContent = s2;
+                reel3.textContent = s3;
+
+                if (s1 === s2 && s2 === s3) {
+                    const win = betVal * 10;
+                    addBalance(win);
+                    msg.textContent = `🎉 SUPER GANHO! Ganhou R$ ${win.toFixed(2)} (10x)`;
+                    showToast('GRANDE GANHO!', `Combinou 3x! R$ ${win.toFixed(2)}`, 'success');
+                } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+                    const win = betVal * 2;
+                    addBalance(win);
+                    msg.textContent = `✨ GANHO DUPLO! Ganhou R$ ${win.toFixed(2)} (2x)`;
+                    showToast('GANHOU!', `R$ ${win.toFixed(2)} creditados`, 'success');
+                } else {
+                    msg.textContent = 'Tente novamente na próxima rodada!';
+                }
+            }, 1000);
+        }
+
+        // --- MODALS & UTILS ---
+        function openModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
+
+        function processSimulatedDeposit() {
+            const val = parseFloat(document.getElementById('deposit-amount').value);
+            if (val > 0) { addBalance(val); closeModal('modal-deposit'); showToast('DEPÓSITO', `R$ ${val.toFixed(2)} creditados!`, 'success'); }
+        }
+
+        function processSimulatedWithdraw() {
+            const val = parseFloat(document.getElementById('withdraw-amount').value);
+            if (val > 0 && deductBalance(val)) { closeModal('modal-withdraw'); showToast('SAQUE', `R$ ${val.toFixed(2)} retirados!`, 'success'); }
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let borderColor = type === 'success' ? 'border-brand-green' : type === 'error' ? 'border-red-500' : 'border-brand-accent';
+
+            toast.className = `bg-brand-card border-l-4 ${borderColor} text-white p-3 rounded-xl shadow-2xl flex items-center justify-between gap-3 min-w-[260px] pointer-events-auto`;
+            toast.innerHTML = `<div><h5 class="font-extrabold text-xs uppercase">${title}</h5><p class="text-xs text-gray-300">${message}</p></div>`;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        window.onload = function () {
+            lucide.createIcons();
+            loadSavedState();
+            document.getElementById('btn-toggle-sidebar')?.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            });
+        };
+    </script>
+</body>
+</html>
